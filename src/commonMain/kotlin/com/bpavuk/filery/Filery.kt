@@ -1,38 +1,52 @@
 package com.bpavuk.filery
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.io.Buffer
+import com.bpavuk.filery.expects.FileContainerImpl
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 internal annotation class FileryDsl
 
-public class Filery(val path: String) {
-    public suspend fun open(): Filery {
-        TODO("""
-            must open the file, underlying implementations should store open file somewhere
-            to make it possible to close it
-        """.trimIndent())
+/**
+ * The [Filery] class used for imperative file management style. It does not open and close the files automatically,
+ * so this routine is up to you. Or, use the declarative [filery] DSL, which is what this library is basically designed
+ * around
+ */
+@Suppress("MemberVisibilityCanBePrivate")
+public class Filery(public val path: String) {
+    private val buffer = Buffer()
+    private val container = FileContainerImpl(Path(path), buffer)
+
+    public suspend fun open(mod: Modes = Modes.ReadWrite): Filery {
+        if (!container.isOpen(mod)) container.open(mod)
+        return this
     }
 
+    public suspend fun isOpen(): Boolean = container.isOpen()
+
     public suspend fun close() {
-        TODO("""
-            must close the file
-        """.trimIndent())
+        container.close()
     }
 
     public suspend fun readBytes(amount: Int = -1): ByteArray {
+
         TODO("""
             must read the file
         """.trimIndent())
     }
 
     public suspend fun readUntil(condition: Byte.() -> Boolean): ByteArray {
-        val byteArray: MutableList<Byte> = mutableListOf()
-        do {
-            val byte = readBytes(amount = 1)[0]
-            byteArray.add(byte)
-        } while (!byte.condition())
-        return ByteArray(byteArray.size) { byteArray[it] }
+//        val byteArray: MutableList<Byte> = mutableListOf()
+//        do {
+//            val byte = readBytes(amount = 1)[0]
+//            byteArray.add(byte)
+//        } while (!byte.condition())
+//        return ByteArray(byteArray.size) { byteArray[it] }
+
+        TODO("""
+            must be implemented on the native side
+        """.trimIndent())
     }
 
     public suspend fun readText(amount: Int = -1): String {
@@ -44,7 +58,7 @@ public class Filery(val path: String) {
 
 /**
  *  The Filery library starting point. It automatically opens your file by path, does what you wish
- *  to do and closes it safely
+ *  to do and closes it safely. Preferred way to work with files
  */
 public suspend inline fun filery(path: String, block: (@FileryDsl Filery).() -> Unit) {
     val filery = Filery(path).open()
@@ -52,7 +66,7 @@ public suspend inline fun filery(path: String, block: (@FileryDsl Filery).() -> 
     filery.close()
 }
 
-fun main() = runBlocking {
+private fun main() = runBlocking {
     filery("fuckery.txt") {
         println(readLine())
     }
