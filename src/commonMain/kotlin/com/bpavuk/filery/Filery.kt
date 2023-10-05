@@ -1,8 +1,11 @@
 package com.bpavuk.filery
 
+import com.bpavuk.filery.expects.FileContainerImpl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
-import com.bpavuk.filery.expects.FileContainerImpl
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
@@ -60,10 +63,16 @@ public class Filery(public val path: String) {
  *  The Filery library starting point. It automatically opens your file by path, does what you wish
  *  to do and closes it safely. Preferred way to work with files
  */
-public suspend inline fun filery(path: String, block: (@FileryDsl Filery).() -> Unit) {
-    val filery = Filery(path).open()
-    filery.block()
-    filery.close()
+public suspend inline fun filery(path: String, noinline block: suspend (@FileryDsl Filery).() -> Unit) {
+    coroutineScope {
+        launch(Dispatchers.IO) {
+            val filery = Filery(path).open()
+            val potentialException = runCatching { filery.block() }.exceptionOrNull()
+            if (potentialException != null) {
+                throw potentialException
+            }
+        }
+    }
 }
 
 private fun main() = runBlocking {
