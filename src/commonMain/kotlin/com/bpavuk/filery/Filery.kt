@@ -68,6 +68,7 @@ public suspend inline fun filery(path: String, noinline block: suspend (@FileryD
         launch(Dispatchers.IO) {
             val filery = Filery(path).open()
             val potentialException = runCatching { filery.block() }.exceptionOrNull()
+            filery.close()
             if (potentialException != null) {
                 throw potentialException
             }

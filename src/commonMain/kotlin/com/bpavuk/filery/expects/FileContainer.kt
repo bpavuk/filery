@@ -18,6 +18,14 @@ public interface FileContainer {
         file = null
         mode = null
     }
+
+    public suspend fun readBytes(amount: Int)
+
+    public suspend fun readUntil(condition: Byte.() -> Boolean)
+
+    public suspend fun isDirectory(): Boolean
+
+    public suspend fun isRegularFile(): Boolean
 }
 
 internal expect class FileContainerImpl(

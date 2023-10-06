@@ -21,4 +21,6 @@ internal actual class FileContainerImpl actual constructor(
     override suspend fun close() {
         file = null
     }
+
+    override suspend fun isDirectory(): Boolean = (file as File?)?.isFile == true
 }
