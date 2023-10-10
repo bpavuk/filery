@@ -1,4 +1,4 @@
-package com.bpavuk.filery
+package com.bpavuk.filery.types
 
 public enum class Modes(public val modName: String) {
     Read("r"),

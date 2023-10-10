@@ -1,10 +1,11 @@
 package com.bpavuk.filery
 
 import com.bpavuk.filery.expects.FileContainerImpl
+import com.bpavuk.filery.types.Modes
+import com.bpavuk.filery.types.Path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 
 @DslMarker
@@ -17,67 +18,80 @@ internal annotation class FileryDsl
  * around
  */
 @Suppress("MemberVisibilityCanBePrivate")
-public class Filery(public val path: String) {
+public class Filery(
+    public val path: String,
+    private val createOnAbsence: Boolean = false
+) {
     private val buffer = Buffer()
-    private val container = FileContainerImpl(Path(path), buffer)
+    private val fileContainer = FileContainerImpl(Path(path), buffer)
+
+    public fun path(): String = path
 
     public suspend fun open(mod: Modes = Modes.ReadWrite): Filery {
-        if (!container.isOpen(mod)) container.open(mod)
+        if (createOnAbsence && !fileContainer.exists()) fileContainer.create()
+        if (!fileContainer.isOpen(mod)) fileContainer.open(mod)
         return this
     }
 
-    public suspend fun isOpen(): Boolean = container.isOpen()
+    public suspend fun isOpen(): Boolean = fileContainer.isOpen()
 
     public suspend fun close() {
-        container.close()
+        fileContainer.close()
     }
 
     public suspend fun readBytes(amount: Int = -1): ByteArray {
-
-        TODO("""
-            must read the file
-        """.trimIndent())
+        fileContainer.readBytes(amount)
+        return fileContainer.readBuffer()
     }
 
-    public suspend fun readUntil(condition: Byte.() -> Boolean): ByteArray {
-//        val byteArray: MutableList<Byte> = mutableListOf()
-//        do {
-//            val byte = readBytes(amount = 1)[0]
-//            byteArray.add(byte)
-//        } while (!byte.condition())
-//        return ByteArray(byteArray.size) { byteArray[it] }
-
-        TODO("""
-            must be implemented on the native side
-        """.trimIndent())
+    public suspend fun readUntil(includeLastByte: Boolean = true, condition: Byte.() -> Boolean): ByteArray {
+        fileContainer.readUntil(includeLastByte, condition)
+        return fileContainer.readBuffer()
     }
 
     public suspend fun readText(amount: Int = -1): String {
-        return readBytes(amount).decodeToString()
+        fileContainer.readBytes(amount)
+        return fileContainer.readBufferAsString()
     }
 
-    public suspend fun readLine(): ByteArray = readUntil { this == '\n'.code.toByte() }
+    public suspend fun readLine(cutLineEscape: Boolean = true): String = readUntil(!cutLineEscape) {
+        this == '\n'.code.toByte()
+    }.decodeToString()
+
+    public suspend fun write(bytes: ByteArray) {
+        fileContainer.writeBytes(bytes)
+        fileContainer.writeToFile()
+    }
+
+    public suspend fun write(bytes: List<Byte>) {
+        write(bytes.toByteArray())
+    }
+
+    public suspend fun append(bytes: ByteArray) {
+        fileContainer.writeBytes(bytes)
+        fileContainer.appendToFile()
+    }
+
+    public suspend fun fileExists(): Boolean = fileContainer.exists()
 }
 
 /**
  *  The Filery library starting point. It automatically opens your file by path, does what you wish
  *  to do and closes it safely. Preferred way to work with files
  */
-public suspend inline fun filery(path: String, noinline block: suspend (@FileryDsl Filery).() -> Unit) {
+public suspend inline fun filery(
+    path: String,
+    createFileOnAbsence: Boolean = false,
+    noinline block: suspend (@FileryDsl Filery).() -> Unit
+) {
     coroutineScope {
         launch(Dispatchers.IO) {
-            val filery = Filery(path).open()
+            val filery = Filery(path, createFileOnAbsence).open()
             val potentialException = runCatching { filery.block() }.exceptionOrNull()
             filery.close()
             if (potentialException != null) {
                 throw potentialException
             }
         }
-    }
-}
-
-private fun main() = runBlocking {
-    filery("fuckery.txt") {
-        println(readLine())
     }
 }
