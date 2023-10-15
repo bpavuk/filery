@@ -3,6 +3,7 @@ package com.bpavuk.filery.expects
 import com.bpavuk.filery.exceptions.FileAlreadyClosedException
 import com.bpavuk.filery.exceptions.FileDoesNotExistException
 import com.bpavuk.filery.exceptions.FileNotOpenException
+import com.bpavuk.filery.exceptions.NotAFileException
 import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Modes
 import com.bpavuk.filery.types.Path
@@ -14,15 +15,18 @@ import java.io.File
 import java.io.FileInputStream
 
 internal actual class FileContainerImpl actual constructor(
-    private val path: Path,
+    path: Path,
     override val buffer: Buffer
 ) : FileContainer {
     override var file: FileryFile? = null
     override var type: FileType? = null
     override var mode: Modes? = null
+    override var path: Path = path
+        private set
+
     private var fileInputStream: FileInputStream? = null
 
-    override suspend fun open(mode: Modes) {
+    override suspend fun open(mode: Modes, path: Path) {
         val file = File(path.path)
         if (file.exists()) {
             this.file = file
@@ -44,6 +48,21 @@ internal actual class FileContainerImpl actual constructor(
         }
     }
 
+    override suspend fun create(
+        path: Path,
+        fileType: FileType
+    ): Boolean = withContext(Dispatchers.IO) {
+        val file = File(path.path)
+        when (fileType) {
+            FileType.FILE -> {
+                file.createNewFile()
+            }
+            FileType.DIRECTORY -> {
+                file.mkdirs()
+            }
+        }
+    }
+
     override suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
         buffer.clear()
         return@withContext (file as File?)?.delete() ?: false
@@ -57,6 +76,8 @@ internal actual class FileContainerImpl actual constructor(
     }
 
     override suspend fun readBytes(amount: Int) = withContext(Dispatchers.IO) {
+        if (file == null) throw FileNotOpenException(path.path)
+        if (type != FileType.FILE) throw NotAFileException(path.path)
         val realSize = if (amount > -1) {
             amount
         } else {
@@ -69,6 +90,8 @@ internal actual class FileContainerImpl actual constructor(
     }
 
     private suspend fun readByteImmediately(): Byte {
+        if (file == null) throw FileNotOpenException(path.path)
+        if (type != FileType.FILE) throw NotAFileException(path.path)
         val array = ByteArray(1)
         return withContext(Dispatchers.IO) {
             if (
@@ -98,11 +121,15 @@ internal actual class FileContainerImpl actual constructor(
     }
 
     override suspend fun writeToFile() = withContext(Dispatchers.IO) {
+        if (file == null) throw FileNotOpenException(path.path)
+        if (type != FileType.FILE) throw NotAFileException(path.path)
         (file as File?)?.writeBytes(readBuffer())
             ?: throw FileNotOpenException(path.path)
     }
 
     override suspend fun appendToFile() = withContext(Dispatchers.IO) {
+        if (file == null) throw FileNotOpenException(path.path)
+        if (type != FileType.FILE) throw NotAFileException(path.path)
         (file as File?)?.appendBytes(buffer.readByteArray())
             ?: throw FileNotOpenException(path.path)
     }

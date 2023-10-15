@@ -11,6 +11,7 @@ public interface FileContainer {
     public var file: FileryFile?
     public var type: FileType?
     public val buffer: Buffer
+    public val path: Path
 
     public var mode: Modes?
 
@@ -18,15 +19,18 @@ public interface FileContainer {
         file != null && this.mode == mode
 
     // TODO: implement modes
-    public suspend fun open(mode: Modes)
+    public suspend fun open(mode: Modes, path: Path = this.path)
 
     public suspend fun create()
+
+    public suspend fun create(path: Path, fileType: FileType): Boolean
 
     public suspend fun exists(): Boolean
 
     public suspend fun close() {
         file = null
         mode = null
+        type = null
     }
 
     /**
