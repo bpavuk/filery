@@ -76,6 +76,14 @@ public class Filery(
         fileContainer.appendToFile()
     }
 
+    public suspend fun append(bytes: List<Byte>) {
+        append(bytes.toByteArray())
+    }
+
+    public suspend fun append(text: String) {
+        append(text.encodeToByteArray())
+    }
+
     public suspend fun fileExists(): Boolean = fileContainer.exists()
 }
 
