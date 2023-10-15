@@ -73,6 +73,12 @@ public interface FileContainer {
      * appends bytes from [buffer] to file instead of overwriting it
      */
     public suspend fun appendToFile()
+
+    /**
+     * deletes the file and cleans the [buffer]
+     * @return boolean that indicates whether deletion was successful
+     */
+    public suspend fun delete(): Boolean
 }
 
 internal expect class FileContainerImpl(

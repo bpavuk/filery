@@ -33,6 +33,8 @@ public class Filery(
         return this
     }
 
+    public suspend fun delete(): Boolean = fileContainer.delete()
+
     public suspend fun isOpen(): Boolean = fileContainer.isOpen()
 
     public suspend fun close() {
@@ -94,11 +96,12 @@ public class Filery(
 public suspend inline fun filery(
     path: String,
     createFileOnAbsence: Boolean = false,
+    mod: Modes = Modes.ReadWrite,
     noinline block: suspend (@FileryDsl Filery).() -> Unit
 ) {
     coroutineScope {
         launch(Dispatchers.IO) {
-            val filery = Filery(path, createFileOnAbsence).open()
+            val filery = Filery(path, createFileOnAbsence).open(mod)
             val potentialException = runCatching { filery.block() }.exceptionOrNull()
             filery.close()
             if (potentialException != null) {

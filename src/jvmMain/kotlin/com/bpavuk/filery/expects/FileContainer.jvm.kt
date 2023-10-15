@@ -44,6 +44,11 @@ internal actual class FileContainerImpl actual constructor(
         }
     }
 
+    override suspend fun delete(): Boolean = withContext(Dispatchers.IO) {
+        buffer.clear()
+        return@withContext (file as File?)?.delete() ?: false
+    }
+
     override suspend fun exists(): Boolean = File(path.path).exists()
 
     override suspend fun close() {
