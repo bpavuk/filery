@@ -67,6 +67,10 @@ public class Filery(
         write(bytes.toByteArray())
     }
 
+    public suspend fun write(text: String) {
+        write(text.encodeToByteArray())
+    }
+
     public suspend fun append(bytes: ByteArray) {
         fileContainer.writeBytes(bytes)
         fileContainer.appendToFile()
