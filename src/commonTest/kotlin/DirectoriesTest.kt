@@ -1,4 +1,4 @@
-import com.bpavuk.filery.exceptions.NotAFileException
+import com.bpavuk.filery.exceptions.NotFileException
 import com.bpavuk.filery.filery
 import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Path
@@ -14,11 +14,13 @@ class DirectoriesTest {
             assertTrue(create(Path("/home/bpavuk/creature.txt")))
             go(Path("/home/bpavuk/creature.txt"))
             write("fuckery goes here and there")
+            delete()
             assertTrue { create(Path("/home/bpavuk/fuckeryDir"), FileType.DIRECTORY) }
             go("/home/bpavuk/fuckeryDir/")
-            assertThrowing<NotAFileException> {
+            assertThrowing<NotFileException> {
                 write("this must fail")
             }
+            delete()
         }
     }
 }

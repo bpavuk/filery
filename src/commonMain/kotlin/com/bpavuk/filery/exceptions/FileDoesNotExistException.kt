@@ -1,3 +1,5 @@
 package com.bpavuk.filery.exceptions
 
-public class FileDoesNotExistException(fileName: String) : RuntimeException("file $fileName does not exist")
+import kotlinx.io.IOException
+
+public data class FileDoesNotExistException(private val fileName: String) : IOException("file $fileName does not exist")

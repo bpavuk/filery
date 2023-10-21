@@ -1,6 +1,6 @@
 package com.bpavuk.filery
 
-import com.bpavuk.filery.expects.FileContainerImpl
+import com.bpavuk.filery.expects.BufferedFile
 import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Modes
 import com.bpavuk.filery.types.Path
@@ -24,7 +24,7 @@ public class Filery(
     private val createOnAbsence: Boolean = false
 ) {
     private val buffer = Buffer()
-    private val fileContainer = FileContainerImpl(Path(path), buffer)
+    private val fileContainer = BufferedFile(Path(path), buffer)
     public var path: String = path
         private set
 
@@ -129,10 +129,10 @@ public suspend inline fun filery(
     coroutineScope {
         launch(Dispatchers.IO) {
             val filery = Filery(path, createFileOnAbsence).open(mod = mod)
-            val potentialException = runCatching { filery.block() }.exceptionOrNull()
-            filery.close()
-            if (potentialException != null) {
-                throw potentialException
+            try {
+                filery.block()
+            } finally {
+                filery.close()
             }
         }
     }

@@ -1,3 +1,5 @@
 package com.bpavuk.filery.exceptions
 
-public class FileNotOpenException(fileName: String) : RuntimeException("file $fileName is not open")
+import kotlinx.io.IOException
+
+public data class FileNotOpenException(val fileName: String) : IOException("file $fileName is not open")

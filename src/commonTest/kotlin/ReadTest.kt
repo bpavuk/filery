@@ -6,9 +6,15 @@ import kotlin.test.assertTrue
 class ReadTest {
     @Test
     fun testRead() = runTest {
+        filery(
+            path = "/home/bpavuk/fuckery.txt",
+            createFileOnAbsence = true
+        ) {
+            write("fuckery\n")
+        }
         filery("/home/bpavuk/fuckery.txt") {
             assertTrue {
-                readLine(cutLineEscape = false) == "fuckery\n"
+                readLine(cutLineEscape = true) == "fuckery"
             }
         }
         filery("/home/bpavuk/fuckery.txt") {
