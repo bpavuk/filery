@@ -9,11 +9,13 @@ public sealed class FileSystemEntity(public open val path: Path) {
     public data class Directory(override val path: Path, val pointer: DirectoryPointer) : FileSystemEntity(path)
 }
 
+public expect fun fileSystemEntityBuilder(path: Path): FileSystemEntity
+
 public expect fun FileSystemEntity.createFile(path: Path): Boolean
 
 public expect fun FileSystemEntity.createDir(path: Path): Boolean
 
 public fun FileSystemEntity.delete(): Boolean = when (this) {
-    is FileSystemEntity.Directory -> this.pointer.delete() // TODO
+    is FileSystemEntity.Directory -> this.pointer.delete()
     is FileSystemEntity.File -> this.pointer.delete()
 }

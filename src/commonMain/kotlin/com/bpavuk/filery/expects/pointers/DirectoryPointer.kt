@@ -19,5 +19,5 @@ public interface IDirectoryPointer {
 
 public expect class DirectoryPointer(
     path: Path,
-    mode: Modes
+    mode: Modes = Modes.ReadWrite
 ) : IDirectoryPointer

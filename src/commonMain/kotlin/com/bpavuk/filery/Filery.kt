@@ -1,6 +1,8 @@
 package com.bpavuk.filery
 
 import com.bpavuk.filery.expects.BufferedFile
+import com.bpavuk.filery.expects.Utils
+import com.bpavuk.filery.expects.readUntil
 import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Modes
 import com.bpavuk.filery.types.Path
@@ -24,63 +26,67 @@ public class Filery(
     private val createOnAbsence: Boolean = false
 ) {
     private val buffer = Buffer()
-    private val fileContainer = BufferedFile(Path(path), buffer)
-    public var path: String = path
-        private set
+    private var bufferedFile = BufferedFile(Path(path), buffer)
+    public val path: Path get() = bufferedFile.path
 
-    public fun path(): String = path
+    public fun path(): String = path.path
 
-    public suspend fun open(
-        path: Path = Path(this.path),
+    public fun open(
+        path: Path = this.path,
         mod: Modes = Modes.ReadWrite,
-        createOnAbsence: Boolean = this.createOnAbsence
+        createOnAbsence: Boolean = this.createOnAbsence // TODO: currently ignored
     ): Filery {
-        if (createOnAbsence && !fileContainer.exists()) fileContainer.create()
-        if (!fileContainer.isOpen(mod)) fileContainer.open(mod, path)
+        bufferedFile.close()
+        bufferedFile = BufferedFile(path, buffer)
         return this
     }
 
-    public suspend fun go(
-        path: Path = Path(this.path),
+    public fun go(
+        path: Path = this.path,
         mod: Modes = Modes.ReadWrite,
         createOnAbsence: Boolean = this.createOnAbsence
     ) {
-        if (createOnAbsence && !fileContainer.exists()) fileContainer.create()
-        fileContainer.open(mod, path)
+        bufferedFile = bufferedFile.openDir(path)
     }
 
-    public suspend fun go(
-        path: String = this.path,
+    public fun go(
+        path: String = this.path.path,
         mod: Modes = Modes.ReadWrite,
         createOnAbsence: Boolean = this.createOnAbsence
     ): Unit = go(Path(path), mod, createOnAbsence)
 
-    public suspend fun create(
+    public fun create(
         filename: Path,
         fileType: FileType = FileType.FILE
-    ): Boolean = fileContainer.create(filename, fileType)
+    ): Boolean =
+        when (fileType) {
+            FileType.FILE -> {
+                bufferedFile.createFile(filename)
+            }
+            FileType.DIRECTORY -> {
+                bufferedFile.createDir(filename)
+            }
+        }
 
-    public suspend fun delete(): Boolean = fileContainer.delete()
+    public fun delete(): Boolean = bufferedFile.delete()
 
-    public suspend fun isOpen(): Boolean = fileContainer.isOpen()
-
-    public suspend fun close() {
-        fileContainer.close()
+    public fun close() {
+        bufferedFile.close()
     }
 
     public suspend fun readBytes(amount: Int = -1): ByteArray {
-        fileContainer.readBytes(amount)
-        return fileContainer.readBuffer()
+        bufferedFile.readBytes(amount)
+        return bufferedFile.readBuffer()
     }
 
     public suspend fun readUntil(includeLastByte: Boolean = true, condition: Byte.() -> Boolean): ByteArray {
-        fileContainer.readUntil(includeLastByte, condition)
-        return fileContainer.readBuffer()
+        bufferedFile.readUntil(includeLastByte, condition)
+        return bufferedFile.readBuffer()
     }
 
     public suspend fun readText(amount: Int = -1): String {
-        fileContainer.readBytes(amount)
-        return fileContainer.readBufferAsString()
+        bufferedFile.readBytes(amount)
+        return bufferedFile.readBufferAsString()
     }
 
     public suspend fun readLine(cutLineEscape: Boolean = true): String = readUntil(!cutLineEscape) {
@@ -88,8 +94,8 @@ public class Filery(
     }.decodeToString()
 
     public suspend fun write(bytes: ByteArray) {
-        fileContainer.writeBytes(bytes)
-        fileContainer.writeToFile()
+        bufferedFile.buffer.write(bytes)
+        bufferedFile.writeToFile()
     }
 
     public suspend fun write(bytes: List<Byte>) {
@@ -101,8 +107,8 @@ public class Filery(
     }
 
     public suspend fun append(bytes: ByteArray) {
-        fileContainer.writeBytes(bytes)
-        fileContainer.appendToFile()
+        bufferedFile.buffer.write(bytes)
+        bufferedFile.appendToFile()
     }
 
     public suspend fun append(bytes: List<Byte>) {
@@ -113,7 +119,7 @@ public class Filery(
         append(text.encodeToByteArray())
     }
 
-    public suspend fun fileExists(): Boolean = fileContainer.exists()
+    public fun fileExists(): Boolean = Utils.exists(path)
 }
 
 /**

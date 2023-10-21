@@ -1,19 +1,21 @@
 package com.bpavuk.filery.expects.pointers
 
-import com.bpavuk.filery.expects.JvmFile
-import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Modes
 import com.bpavuk.filery.types.Path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileInputStream
 import kotlin.math.min
 
 public actual class FilePointer(
     override val platformFilePointer: JvmFile,
-    override val type: FileType,
-    override val mode: Modes,
-    override val path: Path
+    override val mode: Modes = Modes.ReadWrite
 ) : IFilePointer {
+    public constructor(path: Path, mode: Modes = Modes.ReadWrite): this(JvmFile(path), mode)
+
+    override val path: Path = platformFilePointer.path
+
     override fun close(): Boolean {
         platformFilePointer.stream.close()
         return true
@@ -44,4 +46,13 @@ public actual class FilePointer(
             platformFilePointer.file.appendBytes(bytes)
         }
     }
+
+    override fun delete(): Boolean =
+        platformFilePointer.file.delete()
+
+}
+
+public class JvmFile(public val path: Path) {
+    public val file: File = File(path.path)
+    public val stream: FileInputStream = FileInputStream(file)
 }
