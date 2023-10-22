@@ -43,6 +43,8 @@ kotlin {
 //        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
 //    }
 
+    linuxX64()
+    linuxArm64()
     
     sourceSets {
         val commonMain by getting {
@@ -64,6 +66,25 @@ kotlin {
 //        val jsTest by getting
 //        val nativeMain by getting
 //        val nativeTest by getting
+        val linuxMain by creating {
+            dependsOn(commonMain)
+        }
+        val linuxX64Main by getting {
+            dependsOn(linuxMain)
+        }
+        val linuxArm64Main by getting {
+            dependsOn(linuxMain)
+        }
+
+        val linuxTest by creating {
+            dependsOn(commonTest)
+        }
+        val linuxX64Test by getting {
+            dependsOn(linuxTest)
+        }
+        val linuxArm64Test by getting {
+            dependsOn(linuxTest)
+        }
     }
 }
 

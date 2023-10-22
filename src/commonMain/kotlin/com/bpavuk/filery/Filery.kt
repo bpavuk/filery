@@ -6,9 +6,6 @@ import com.bpavuk.filery.expects.readUntil
 import com.bpavuk.filery.types.FileType
 import com.bpavuk.filery.types.Modes
 import com.bpavuk.filery.types.Path
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.io.Buffer
 
 @DslMarker
@@ -141,14 +138,10 @@ public suspend inline fun filery(
     mod: Modes = Modes.ReadWrite,
     noinline block: suspend (@FileryDsl Filery).() -> Unit
 ) {
-    coroutineScope {
-        launch(Dispatchers.IO) {
-            val filery = Filery(path, createFileOnAbsence).open(mod = mod)
-            try {
-                filery.block()
-            } finally {
-                filery.close()
-            }
-        }
+    val filery = Filery(path, createFileOnAbsence).open(mod = mod)
+    try {
+        filery.block()
+    } finally {
+        filery.close()
     }
 }
