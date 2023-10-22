@@ -34,7 +34,7 @@ public class Filery(
     public fun open(
         path: Path = this.path,
         mod: Modes = Modes.ReadWrite,
-        createOnAbsence: Boolean = this.createOnAbsence // TODO: currently ignored
+        createOnAbsence: Boolean = this.createOnAbsence
     ): Filery {
         bufferedFile.close()
         bufferedFile = BufferedFile(path, buffer)
