@@ -9,7 +9,7 @@ public sealed class FileSystemEntity(public open val path: Path) {
     public data class Directory(override val path: Path, val pointer: DirectoryPointer) : FileSystemEntity(path)
 }
 
-public expect fun fileSystemEntityBuilder(path: Path): FileSystemEntity
+public expect fun fileSystemEntityBuilder(path: Path, createFileOnNonExistence: Boolean = false): FileSystemEntity
 
 public expect fun FileSystemEntity.createFile(path: Path): Boolean
 

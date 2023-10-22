@@ -9,7 +9,7 @@ import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
 import java.nio.file.Paths
 
-public actual fun fileSystemEntityBuilder(path: Path): FileSystemEntity {
+public actual fun fileSystemEntityBuilder(path: Path, createFileOnNonExistence: Boolean): FileSystemEntity {
     val file = File(path.path)
 
     return when {
@@ -20,6 +20,11 @@ public actual fun fileSystemEntityBuilder(path: Path): FileSystemEntity {
         file.isFile -> {
             val pointer = FilePointer(path)
             FileSystemEntity.File(path, pointer)
+        }
+        !file.exists() && createFileOnNonExistence -> {
+            println("new file ${path.path} created")
+            file.createNewFile()
+            fileSystemEntityBuilder(path, createFileOnNonExistence = false)
         }
         else -> throw FileDoesNotExistException(path.path)
     }

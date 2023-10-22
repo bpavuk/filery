@@ -26,7 +26,7 @@ public class Filery(
     private val createOnAbsence: Boolean = false
 ) {
     private val buffer = Buffer()
-    private var bufferedFile = BufferedFile(Path(path), buffer)
+    private var bufferedFile = BufferedFile(Path(path), buffer, createOnAbsence)
     public val path: Path get() = bufferedFile.path
 
     public fun path(): String = path.path
@@ -38,22 +38,31 @@ public class Filery(
     ): Filery {
         bufferedFile.close()
         bufferedFile = BufferedFile(path, buffer)
+        if (!Utils.exists(path) && createOnAbsence) bufferedFile.createFile(path)
         return this
     }
 
     public fun go(
         path: Path = this.path,
+        type: FileType = FileType.FILE,
         mod: Modes = Modes.ReadWrite,
         createOnAbsence: Boolean = this.createOnAbsence
     ) {
-        bufferedFile = bufferedFile.openDir(path)
+        bufferedFile = when (type) {
+            FileType.FILE -> {
+                bufferedFile.close()
+                BufferedFile(path, buffer)
+            }
+            FileType.DIRECTORY -> bufferedFile.openDir(path)
+        }
     }
 
     public fun go(
         path: String = this.path.path,
+        type: FileType = FileType.FILE,
         mod: Modes = Modes.ReadWrite,
         createOnAbsence: Boolean = this.createOnAbsence
-    ): Unit = go(Path(path), mod, createOnAbsence)
+    ): Unit = go(Path(path), type, mod, createOnAbsence)
 
     public fun create(
         filename: Path,

@@ -9,9 +9,10 @@ import kotlinx.io.readString
 
 public class BufferedFile(
     public val path: Path,
-    public val buffer: Buffer = Buffer()
+    public val buffer: Buffer = Buffer(),
+    createFileOnNonExistence: Boolean = false
 ) {
-    public val fileSystemEntity: FileSystemEntity = fileSystemEntityBuilder(path)
+    public val fileSystemEntity: FileSystemEntity = fileSystemEntityBuilder(path, createFileOnNonExistence)
 
     private constructor(
         fileSystemEntity: FileSystemEntity,
