@@ -19,5 +19,8 @@ public interface IFilePointer {
     public fun delete(): Boolean
 }
 
-public expect class FilePointer : IFilePointer
+public expect class FilePointer(
+    path: Path,
+    mode: Modes = Modes.ReadWrite
+) : IFilePointer
 

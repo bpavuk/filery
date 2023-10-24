@@ -12,7 +12,7 @@ public actual class FilePointer(
     override val platformFilePointer: JvmFile,
     override val mode: Modes = Modes.ReadWrite
 ) : IFilePointer {
-    public constructor(path: Path, mode: Modes = Modes.ReadWrite): this(JvmFile(path), mode)
+    public actual constructor(path: Path, mode: Modes): this(JvmFile(path), mode)
 
     override val path: Path = platformFilePointer.path
 
