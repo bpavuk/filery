@@ -1,7 +1,7 @@
 import com.bpavuk.filery.filery
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class ReadTest {
     @Test
@@ -13,20 +13,14 @@ class ReadTest {
             write("fuckery\n")
         }
         filery("/home/bpavuk/fuckery.txt") {
-            assertTrue {
-                readLine(cutLineEscape = true) == "fuckery"
-            }
+            assertEquals(readLine(cutLineEscape = true), "fuckery")
         }
         filery("/home/bpavuk/fuckery.txt") {
-            assertTrue {
-                readBytes(3).decodeToString() == "fuc"
-            }
-            assertTrue { readLine() == "kery" }
+            assertEquals(readBytes(3).decodeToString(), "fuc")
+            assertEquals(readLine(), "kery")
         }
         filery("/home/bpavuk/fuckery.txt") {
-            assertTrue {
-                readBytes().decodeToString() == "fuckery\n"
-            }
+            assertEquals(readBytes().toList(), "fuckery\n".encodeToByteArray().toList())
         }
     }
 }

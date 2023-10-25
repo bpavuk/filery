@@ -34,10 +34,17 @@ public actual class FilePointer actual constructor(
         val bytesLeft = (fileSize - platformFilePointer.currentPosition).toULong()
         fseek(platformFilePointer.currentPointer, platformFilePointer.currentPosition, SEEK_SET)
 
-        val realAmount = amount?.toULong() ?: bytesLeft
-        val cByteArray = nativeHeap.allocArray<ByteVar>(realAmount.toInt())
-        fread(cByteArray, 1.toULong(), realAmount, platformFilePointer.currentPointer)
-        return cByteArray.readBytes(realAmount.toInt())
+        val realAmount = if (amount == null || amount < 0) bytesLeft.toInt() else amount
+        println(realAmount)
+        return if (realAmount < 0) {
+            ByteArray(1) { -1 }
+        } else {
+            val cByteArray = nativeHeap.allocArray<ByteVar>(realAmount)
+            fread(cByteArray, 1.toULong(), realAmount.toULong(), platformFilePointer.currentPointer)
+            val result = cByteArray.readBytes(realAmount)
+            nativeHeap.free(cByteArray)
+            result
+        }
     }
 
     override suspend fun writeBytes(bytes: ByteArray) {
