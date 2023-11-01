@@ -19,9 +19,13 @@ public actual class DirectoryPointer actual constructor(
         TODO("Not yet implemented")
     }
 
-    override fun create(relativePath: String): IDirectoryPointer {
+    override fun create(relativePath: String, mode: Modes): IDirectoryPointer {
         TODO("Not yet implemented")
     }
 
     override fun delete(): Boolean = platformDirectoryPointer.delete()
+
+    override fun close(): Boolean {
+        TODO("Not yet implemented")
+    }
 }

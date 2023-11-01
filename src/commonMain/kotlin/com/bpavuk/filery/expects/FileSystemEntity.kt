@@ -19,3 +19,8 @@ public fun FileSystemEntity.delete(): Boolean = when (this) {
     is FileSystemEntity.Directory -> this.pointer.delete()
     is FileSystemEntity.File -> this.pointer.delete()
 }
+
+public fun FileSystemEntity.close(): Boolean = when (this) {
+    is FileSystemEntity.Directory -> this.pointer.delete()
+    is FileSystemEntity.File -> this.pointer.delete()
+}

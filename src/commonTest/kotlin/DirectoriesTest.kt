@@ -12,7 +12,9 @@ class DirectoriesTest {
     fun testDirectories() = runTest {
         filery("/home/bpavuk") {
             assertTrue(create(Path("/home/bpavuk/creature.txt")))
+            println("/home/bpavuk/creature.txt file created")
             go(Path("/home/bpavuk/creature.txt"))
+            println("/home/bpavuk/creature.txt file opened")
             write("fuckery goes here and there")
             delete()
             assertTrue { create(Path("/home/bpavuk/fuckeryDir"), FileType.DIRECTORY) }

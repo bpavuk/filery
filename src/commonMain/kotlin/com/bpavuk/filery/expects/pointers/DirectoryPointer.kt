@@ -12,9 +12,11 @@ public interface IDirectoryPointer {
 
     public fun go(relativePath: String, mode: Modes = this.mode): IDirectoryPointer
 
-    public fun create(relativePath: String): IDirectoryPointer
+    public fun create(relativePath: String, mode: Modes = Modes.ReadWrite): IDirectoryPointer
 
     public fun delete(): Boolean
+
+    public fun close(): Boolean
 }
 
 public expect class DirectoryPointer(

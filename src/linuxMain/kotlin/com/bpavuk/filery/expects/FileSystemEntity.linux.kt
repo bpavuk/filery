@@ -23,7 +23,7 @@ public actual fun FileSystemEntity.createFile(path: Path): Boolean {
 }
 
 public actual fun FileSystemEntity.createDir(path: Path): Boolean {
-    return mkdir("new_directory", (S_IRWXU or S_IRWXG or S_IRWXO).toUInt()) == 0
+    return mkdir(path.path, (S_IRWXU or S_IRWXG or S_IRWXO).toUInt()) == 0
 }
 
 private fun S_ISREG(m: __mode_t): Boolean = m.toInt() and S_IFMT == S_IFREG
@@ -49,6 +49,10 @@ public actual fun fileSystemEntityBuilder(
             path,
             DirectoryPointer(path)
         )
+    } else if (createFileOnNonExistence) {
+        val file = fopen(path.path, "w")
+        fclose(file)
+        fileSystemEntityBuilder(path, createFileOnNonExistence)
     } else {
         throw FileDoesNotExistException(path.path)
     }

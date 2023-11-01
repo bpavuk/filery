@@ -20,7 +20,7 @@ class WriteTest {
             path = "/home/bpavuk/fileryTest.txt",
             createFileOnAbsence = true
         ) {
-            append(secretWords[1].encodeToByteArray())
+            append(secretWords[1])
             val result = readText()
             assertEquals(secretWords.joinToString(separator = ""), result)
             delete()

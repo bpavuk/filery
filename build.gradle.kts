@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.bpavuk"
-version = "Prerelease_2"
+version = "Prerelease_3"
 
 repositories {
     mavenCentral()

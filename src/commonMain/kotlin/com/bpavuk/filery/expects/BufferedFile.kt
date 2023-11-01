@@ -23,10 +23,7 @@ public class BufferedFile(
 
     public fun createDir(path: Path): Boolean = fileSystemEntity.createDir(path)
 
-    public fun close(): Boolean = when (fileSystemEntity) {
-        is FileSystemEntity.File -> fileSystemEntity.pointer.close()
-        is FileSystemEntity.Directory -> true
-    }
+    public fun close(): Boolean = fileSystemEntity.close()
 
     /**
      * reads bytes to [buffer]
